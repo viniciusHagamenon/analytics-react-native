@@ -32,10 +32,24 @@ RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
 
-RCT_EXPORT_METHOD(setup:(NSDictionary*)options
-          setupResolver:(RCTPromiseResolveBlock)resolve
-          setupRejecter:(RCTPromiseRejectBlock)reject)
-{
+static NSString* singletonJsonConfig = nil;
+
+RCT_EXPORT_METHOD(
+     setup:(NSDictionary*)options
+          :(RCTPromiseResolveBlock)resolver
+          :(RCTPromiseRejectBlock)rejecter
+) {
+    NSString* json = options[@"json"];
+
+    if(singletonJsonConfig != nil) {
+        if(json == singletonJsonConfig) {
+            return resolver(nil);
+        }
+        else {
+            return rejecter(@"E_SEGMENT_RECONFIGURED", @"Duplicate Analytics client", nil);
+        }
+    }
+
     SEGAnalyticsConfiguration* config = [SEGAnalyticsConfiguration configurationWithWriteKey:options[@"writeKey"]];
     
     config.recordScreenViews = [options[@"recordScreenViews"] boolValue];
@@ -53,8 +67,8 @@ RCT_EXPORT_METHOD(setup:(NSDictionary*)options
     @try {
         [SEGAnalytics setupWithConfiguration:config];
     }
-    @catch (NSException *exception) {
-        reject(exception);
+    @catch(NSException* error) {
+        return rejecter(@"E_SEGMENT_ERROR", @"Unexpected native Analtyics error", error);
     }
     
     // On iOS we use method swizzling to intercept lifecycle events
@@ -69,7 +83,9 @@ RCT_EXPORT_METHOD(setup:(NSDictionary*)options
                                                withObject:_bridge.launchOptions];
         }
     }
-    resolve(YES);
+
+    singletonJsonConfig = json;
+    resolver(nil);
 }
 
 #define withContext(context) @{@"context": context}
