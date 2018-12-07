@@ -1,6 +1,6 @@
 {
-  "name": "@internal/analytics-react-native",
-  "version": "0.0.1-beta.3",
+  "name": "@segment/analytics-react-native",
+  "version": "0.0.2",
   "main": "index.js",
   "license": "MIT",
   "private": true,
