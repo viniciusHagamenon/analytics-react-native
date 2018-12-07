@@ -112,16 +112,18 @@ jobs:
       # macOS VMs doesn't support Docker based caches
       - run: yarn install --frozen-lockfile
       - *attach
+      - restore_cache:
+          key: cocoapods-specs
+
       - run: brew tap wix/brew
       - run: brew install wix/brew/applesimutils
 
-      - restore_cache:
-          key: cocoapods-specs
       - run: yarn test-app test:ios
       - save_cache:
           key: cocoapods-specs
           paths:
             - ~/.cocoapods
+            - /usr/local/Homebrew/Library
   publish:
     <<: *nodeJob
     steps:
