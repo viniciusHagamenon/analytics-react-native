@@ -20,4 +20,4 @@ pushd project/ios
 popd
 
 yarn detox build --configuration ios-$cfg
-yarn detox test --configuration ios-$cfg
+yarn detox test --configuration ios-$cfg --loglevel trace
